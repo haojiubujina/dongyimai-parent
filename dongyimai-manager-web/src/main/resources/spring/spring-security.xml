@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/security"
+             xmlns:beans="http://www.springframework.org/schema/beans"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+					http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd">
+
+         <!-- 配置 favicon.ico不进行安全拦截-->
+        <http pattern="/favicon.ico" security="none"/>
+        <http pattern="/login.html" security="none"/>
+        <http pattern="/css/**" security="none"/>
+        <http pattern="/img/**" security="none"/>
+        <http pattern="/js/**" security="none"/>
+        <http pattern="/plugins/**" security="none"/>
+
+        <!--进行声明配置的方法 ，进行安全验证的相关配置-->
+        <!--那些资源需要验证-->
+        <http use-expressions="false">
+
+            <!--页面拦截规则-->
+            <intercept-url pattern="/**" access="ROLE_ADMIN"></intercept-url>
+
+            <form-login login-page="/login.html" default-target-url="/admin/index.html"
+                        always-use-default-target="true" authentication-failure-url="/error.html"/>
+
+            <!--关闭防止跨站攻击策略-->
+            <csrf disabled="true"></csrf>
+
+            <!--配置退出跳转页面-->
+            <logout></logout>
+
+            <!--配置框架策略：  框架同源-->
+            <headers>
+                <frame-options policy="SAMEORIGIN"/>
+            </headers>
+        </http>
+
+        <!--在认证管理器中配置角色-->
+        <authentication-manager>
+            <authentication-provider>
+                <user-service>
+                    <!--用户的角色配置 必须以ROLE_开始-->
+                    <user name="admin" password="123" authorities="ROLE_ADMIN"></user>
+
+                </user-service>
+            </authentication-provider>
+        </authentication-manager>
+
+
+</beans:beans>

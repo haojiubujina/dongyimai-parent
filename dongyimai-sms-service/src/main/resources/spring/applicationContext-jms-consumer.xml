@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+    <!--加载属性文件-->
+    <context:property-placeholder location="classpath*:properties/sms.properties"></context:property-placeholder>
+
+    <context:component-scan base-package="com.offcn"></context:component-scan>
+
+    <!--将jms一些工具类链接对象 放到spring容器中 bean-->
+
+    <!--Activemq 提供工厂配置链接工厂-->
+    <bean id="activeMQConnectionFactory"  class="org.apache.activemq.ActiveMQConnectionFactory">
+         <property name="brokerURL" value="tcp://192.168.188.146:61616"></property>
+
+    </bean>
+    <!--spring 提供工厂配置链接工厂  对 Activemq 提供工厂配置链接工厂 包装-->
+    <bean id="connectionFactory"  class="org.springframework.jms.connection.SingleConnectionFactory">
+        <property name="targetConnectionFactory" ref="activeMQConnectionFactory"></property>
+
+    </bean>
+
+
+    <!--消息操作的工具类  发送消息， 接收消息-->
+    <bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <!--引入工厂-->
+        <property name="connectionFactory" ref="connectionFactory"></property>
+
+    </bean>
+
+
+    <!--配置消息的队列的目的地-->
+
+    <bean id="queueSmsDestination" class="org.apache.activemq.command.ActiveMQQueue">
+        <constructor-arg value="dongyimai_queue_sms"></constructor-arg>
+
+    </bean>
+
+
+    <!--配置监听器容器-->
+    <bean class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+        <!--连接工厂-->
+        <property name="connectionFactory" ref="connectionFactory"></property>
+        <!--消息目的地址-->
+        <property name="destination" ref="queueSmsDestination"></property>
+        <!--消息处理监听器-->
+        <property name="messageListener" ref="smsListener"></property>
+    </bean>
+
+</beans>
